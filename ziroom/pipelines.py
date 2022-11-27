@@ -74,7 +74,7 @@ class ZiroomPipeline(object):
 
     def register_ding_notify(self, spider):
         self.ding = DingDingNotifyUtil(
-            access_token=spider.settings.get("DING_ACCESS_TOKEN"), secret=spider.settings.get("ING_SECRET"))
+            access_token=spider.settings.get("DING_ACCESS_TOKEN"), secret=spider.settings.get("DING_SECRET"))
         after_adjust_price.connect(self.handle_adjust_price)
         predict_adjust_nearly.connect(self.handle_predict_adjust_nearly)
 
