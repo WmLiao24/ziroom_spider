@@ -1,0 +1,8 @@
+; 其它配置需要放到data目录下
+[ding_notify]
+; 开启钉钉通知
+open = False
+; 钉钉群聊机器人access token
+access_token =
+; 钉钉群聊机器人加签
+secret =

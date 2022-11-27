@@ -89,3 +89,22 @@ ITEM_PIPELINES = {
 #HTTPCACHE_DIR = 'httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+# 钉钉群消息
+OPEN_DING_NOTIFY = False
+DING_ACCESS_TOKEN = None
+DING_SECRET = None
+
+import os
+from configparser import ConfigParser
+
+_other_config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../data/other.cfg")
+_parser = ConfigParser()
+if os.path.exists(_other_config_path):
+    print("loading other config.")
+    with open(_other_config_path, "r", encoding="utf8") as f:
+        _parser.read_file(f)
+    # 钉钉群消息
+    OPEN_DING_NOTIFY = _parser.getboolean("ding_notify", "open")
+    DING_ACCESS_TOKEN = _parser.get("ding_notify", "access_token")
+    DING_SECRET = _parser.get("ding_notify", "secret")

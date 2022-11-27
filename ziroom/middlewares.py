@@ -54,10 +54,6 @@ class ZiroomSpiderMiddleware(object):
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
-        spider.start_urls = [
-            "https://www.ziroom.com/z/?p=x3&qwd=%E9%80%9A%E6%83%A0%E5%AE%B6%E5%9B%AD&isOpen=1",
-            "https://www.ziroom.com/z/?p=x4&qwd=%E9%80%9A%E6%83%A0%E5%AE%B6%E5%9B%AD&isOpen=1"
-        ]
 
 
 class ZiroomDownloaderMiddleware(object):
