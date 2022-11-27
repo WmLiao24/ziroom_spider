@@ -62,7 +62,6 @@ class ZiroomRoomItemLog(Base):
                 item = ZiroomRoomItem.add_item_from_log(session, item_log)
             else:
                 item.merge_item_and_log(session, item_log)
-                session.merge(item)
             items.append(item)
 
         logger.debug("refresh items: %s", len(items))
@@ -157,6 +156,7 @@ class ZiroomRoomItem(Base):
             self.release_date = today
             # 发送广播，通知已经释放
             after_release.send(self)
+        session.merge(self)
 
     def predict_next_adjust(self, session, between_days_model, price_model):
         """预测房间调价"""
