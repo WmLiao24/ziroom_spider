@@ -1,0 +1,8 @@
+# conda install python=3.8
+# conda install opencv
+# conda install scikit-learn
+Scrapy
+pytesseract
+ddddocr==1.4.7
+sqlalchemy
+blinker
