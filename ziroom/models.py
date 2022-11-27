@@ -135,13 +135,13 @@ class ZiroomRoomItem(Base):
         self.tip = item_log.tip
         self.underline_price = item_log.underline_price
         self.direction = item_log.direction
-        self.using_area = item_log.using_area,
+        self.using_area = item_log.using_area
         self.house_type = item_log.house_type
-        self.floor = item_log.floor,
+        self.floor = item_log.floor
         self.sign_date_limit = item_log.sign_date_limit
-        self.house_id = item_log.house_id,
+        self.house_id = item_log.house_id
         self.room_id = item_log.room_id
-        self.inv_no = item_log.inv_no,
+        self.inv_no = item_log.inv_no
         self.update_at = current_time()
 
         if self.price != item_log.price:
