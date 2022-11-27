@@ -30,6 +30,9 @@ class PriceMonitorSpider(scrapy.Spider):
             item_title = item.css(".title a::text").extract_first()
             logger.info("handle: %s", item_title)
             item_url = item.css(".title a::attr(href)").extract_first()
+            # 忽略公寓
+            if not "/x/" in item_url:
+                continue
             item_id = item.css(".title a::attr(href)").re_first("\d+")
             item_desc = item.css(".desc div::text").extract_first()
             price_num_e = item.css(".price .num::attr(style)")
@@ -46,11 +49,28 @@ class PriceMonitorSpider(scrapy.Spider):
 
             # 按日期和房间ID分组唯一，当日可以多次更新
             id = "%s%s"%(datetime.datetime.today().strftime("%Y%m%d"), item_id)
-            yield ZiroomItem(id=id, item_url=item_url.strip('/'), item_id=item_id,
+            yield scrapy.Request(url=urljoin("https://", item_url), callback=self.parse_detail,
+                                 cb_kwargs=dict(id=id, item_url=urljoin("https://", item_url), item_id=item_id,
                              item_title=item_title, item_desc=item_desc,
                              tip=tip, sign_status=sign_status,
                              price=self.parse_price(price_num_e,background_size=20),
-                             underline_price=self.parse_price(underline_price_num_e, background_size=15))
+                             underline_price=self.parse_price(underline_price_num_e, background_size=15)))
+
+    def parse_detail(self, response, **data):
+        """处理详情页"""
+        response.css("head script::text")
+        house_id = response.css("script::text").re_first('(?<=house_id":")[^"]+')
+        room_id = response.css("script::text").re_first('(?<=room_id":")[^"]+')
+        inv_no = response.css("script::text").re_first('(?<=invNo":")[^"]+')
+        home_info_ele = response.css(".Z_home_info .Z_home_b")
+        using_area = home_info_ele.css("dl:contains(使用面积) dd::text").extract_first()
+        direction = home_info_ele.css("dl:contains(朝向) dd::text").extract_first()
+        house_type = home_info_ele.css("dl:contains(户型) dd::text").extract_first()
+        floor = response.css(".Z_home_info .Z_home_o li:contains(楼层) .va::text").extract_first()
+        sign_date_limit = response.css(".jiance .info_label:contains(签约时长)+.info_value::text").extract_first()
+        yield ZiroomItem(**data, house_id=house_id, room_id=room_id, inv_no=inv_no,
+                         using_area=using_area, direction=direction, house_type=house_type,
+                         sign_date_limit=sign_date_limit, floor=floor)
 
     def parse_price(self, ele, background_size):
         if len(ele) == 0:

@@ -2,6 +2,7 @@ import unittest
 
 from sklearn.linear_model import LinearRegression
 
+from ziroom.dingding import DingDingNotifyUtil
 from ziroom.models import ZiroomRoomItemLog, ZiroomAdjustPriceLog, ZiroomRoomItem
 from ziroom.spiders.price_util import *
 
@@ -93,3 +94,14 @@ class ZiroomSpiderTest(unittest.TestCase):
         for item in session.query(ZiroomRoomItem):
             item.predict_next_adjust(session, between_days_model, price_model)
         session.rollback()
+
+    def test_send_ding_notify(self):
+        from configparser import ConfigParser
+
+        _other_config_path = data_path("other.cfg")
+        _parser = ConfigParser()
+        with open(_other_config_path, "r", encoding="utf8") as f:
+            _parser.read_file(f)
+        # 钉钉群消息
+        ding = DingDingNotifyUtil(_parser.get("ding_notify", "access_token"), _parser.get("ding_notify", "secret"))
+        ding.send_notify("**测试** [百度](https://www.baidu.com)  \n<font color=\"#FF0000\">警告</font> 错误发生了")

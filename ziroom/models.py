@@ -12,9 +12,10 @@ Base = declarative_base()
 
 today = datetime.datetime.today()
 
-after_release = blinker.Signal()
-after_adjust_price = blinker.Signal()
-predict_adjust_nearly = blinker.Signal()
+after_online = blinker.Signal(doc="新上线, 参数: item")
+after_release = blinker.Signal(doc="新释放, 参数: item")
+after_adjust_price = blinker.Signal(doc="调价, 参数: adjust, item_log")
+predict_adjust_nearly = blinker.Signal(doc="预测近期调价，参数：item, left_days, self.predict_adjust_price")
 
 def current_time():
     return int(time.time()*1000)
@@ -30,10 +31,23 @@ class ZiroomRoomItemLog(Base):
     item_desc = Column(String(255), nullable=False, comment="房间描述")
     tip = Column(String(255), nullable=True, comment="优惠提示")
     sign_status = Column(String(255), nullable=True, comment="签约状态")
+    direction = Column(String(255), nullable=True, comment="朝向")
+    using_area = Column(String(255), nullable=True, comment="使用面积")
+    house_type = Column(String(255), nullable=True, comment="户型")
+    floor = Column(String(255), nullable=True, comment="楼层")
+    sign_date_limit = Column(String(255), nullable=True, comment="签约时长")
+    house_id = Column(String(20), nullable=True, comment="房屋号")
+    room_id = Column(String(20), nullable=True, comment="房间号")
+    inv_no = Column(String(20), nullable=True, comment="?")
     price = Column(Integer, nullable=True, comment="价格")
     underline_price = Column(Integer, nullable=True, comment="划线价格")
     create_at = Column(Integer, default=current_time, comment="创建时间")
     update_at = Column(Integer, nullable=True, comment="更新时间")
+
+    def get_h5_url(self):
+        return 'https://hot.ziroom.com/zrk_rent_cn/pages/detail/main?id=%s&house_id=%s&inv_no=%s&pageSource=homePage'%(
+            self.room_id, self.house_id, self.inv_no
+        )
 
     @classmethod
     def compare_old(cls, session, begin_time):
@@ -67,6 +81,14 @@ class ZiroomRoomItem(Base):
     item_desc = Column(String(255), nullable=False, comment="房间描述")
     tip = Column(String(255), nullable=True, comment="优惠提示")
     sign_status = Column(String(20), nullable=True, comment="签约状态(签约|待释放|转)")
+    direction = Column(String(255), nullable=True, comment="朝向")
+    using_area = Column(String(255), nullable=True, comment="使用面积")
+    house_type = Column(String(255), nullable=True, comment="户型")
+    floor = Column(String(255), nullable=True, comment="楼层")
+    sign_date_limit = Column(String(255), nullable=True, comment="签约时长")
+    house_id = Column(String(20), nullable=True, comment="房屋号")
+    room_id = Column(String(20), nullable=True, comment="房间号")
+    inv_no = Column(String(20), nullable=True, comment="?")
     price = Column(Integer, nullable=True, comment="价格")
     underline_price = Column(Integer, nullable=True, comment="划线价格")
     release_date = Column(Date, nullable=True, comment="释放时间")
@@ -76,6 +98,11 @@ class ZiroomRoomItem(Base):
     create_at = Column(Integer, default=current_time, comment="创建时间")
     update_at = Column(Integer, nullable=True, comment="更新时间")
 
+    def get_h5_url(self):
+        return 'https://hot.ziroom.com/zrk_rent_cn/pages/detail/main?id=%s&house_id=%s&inv_no=%s&pageSource=homePage'%(
+            self.room_id, self.house_id, self.inv_no
+        )
+
     @classmethod
     def add_item_from_log(cls, session:Session, item_log:ZiroomRoomItemLog):
         """新房间"""
@@ -84,12 +111,19 @@ class ZiroomRoomItem(Base):
             item_title=item_log.item_title, item_desc=item_log.item_desc,
             tip=item_log.tip, sign_status=item_log.sign_status,
             price=item_log.price, underline_price=item_log.underline_price,
+            direction=item_log.direction, using_area=item_log.using_area,
+            house_type=item_log.house_type, floor=item_log.floor,
+            sign_date_limit=item_log.sign_date_limit, house_id=item_log.house_id,
+            room_id=item_log.room_id, inv_no=item_log.inv_no,
             update_at=current_time())
         session.add(item)
 
         # 在采集之前调价？保存调价记录
         if item.underline_price:
             ZiroomAdjustPriceLog.add_adjust_from_log(session, item_log, item)
+
+        # 发送通知
+        after_online.send(item)
 
         return item
 
@@ -100,6 +134,14 @@ class ZiroomRoomItem(Base):
         self.item_desc = item_log.item_desc
         self.tip = item_log.tip
         self.underline_price = item_log.underline_price
+        self.direction = item_log.direction
+        self.using_area = item_log.using_area,
+        self.house_type = item_log.house_type
+        self.floor = item_log.floor,
+        self.sign_date_limit = item_log.sign_date_limit
+        self.house_id = item_log.house_id,
+        self.room_id = item_log.room_id
+        self.inv_no = item_log.inv_no,
         self.update_at = current_time()
 
         if self.price != item_log.price:

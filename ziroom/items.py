@@ -19,4 +19,13 @@ class ZiroomItem(scrapy.Item):
     underline_price = scrapy.Field()
     tip = scrapy.Field()
     sign_status = scrapy.Field()
+    house_id = scrapy.Field()
+    room_id = scrapy.Field()
+    inv_no = scrapy.Field()
+    direction = scrapy.Field()
+    using_area = scrapy.Field()
+    house_type = scrapy.Field()
+    floor = scrapy.Field()
+    sign_date_limit = scrapy.Field()
+
 

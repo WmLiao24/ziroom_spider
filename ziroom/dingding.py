@@ -24,8 +24,9 @@ class DingDingNotifyUtil:
         hmac_code = hmac.new(secret_enc, string_to_sign_enc, digestmod=hashlib.sha256).digest()
         sign = urllib.parse.quote_plus(base64.b64encode(hmac_code))
         requests.post("https://oapi.dingtalk.com/robot/send?access_token=%s&timestamp=%s&sign=%s"%(self.access_token, timestamp, sign), json={
-            "msgtype": "text",
-            "text": {
-                "content": "Send by ZiroomSpider(%s): \n%s"%(self.myname, msg)
+            "msgtype": "markdown",
+            "markdown": {
+                "title": "Send by ZiroomSpider(%s):"%self.myname,
+                "text": msg
             }
         })
