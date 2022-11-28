@@ -108,3 +108,7 @@ if os.path.exists(_other_config_path):
     OPEN_DING_NOTIFY = _parser.getboolean("ding_notify", "open")
     DING_ACCESS_TOKEN = _parser.get("ding_notify", "access_token")
     DING_SECRET = _parser.get("ding_notify", "secret")
+
+import logging.config
+_log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../logs/")
+logging.config.fileConfig("logger.cfg", defaults={"LOG_DIR": _log_dir})
