@@ -82,7 +82,7 @@ class ZiroomPipeline(object):
         """发送信息"""
         try:
             if self.ding and self.msgs:
-                self.ding.send_notify("  \n".join(self.msgs))
+                self.ding.send_notify(self.msgs[-1], "  \n".join(self.msgs))
         except Exception as e:
             logger.exception("sending error: %s", str(e))
 
