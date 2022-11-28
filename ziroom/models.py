@@ -150,7 +150,7 @@ class ZiroomRoomItem(Base):
             # 经过对比确定是产生了条件行为，记录日志
             adjust = ZiroomAdjustPriceLog.add_adjust_from_log(session, item_log, item=self, adjust_price_date=today)
             # 发送广播，通知已经调价
-            after_adjust_price.send(adjust, item_log)
+            after_adjust_price.send(adjust, item_log=item_log)
         if item_log.sign_status != self.sign_status and item_log.sign_status == "签约":
             # 更新签约时间
             self.release_date = today
