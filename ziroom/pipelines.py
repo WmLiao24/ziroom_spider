@@ -46,6 +46,7 @@ class ZiroomPipeline(object):
     def close_spider(self, spider):
         end_time = current_time()
         logger.info("finish collect, cost: %s ms", end_time-self.begin_time)
+        title = ""
         try:
             # 完成基本信息的变更
             items = []
@@ -53,11 +54,13 @@ class ZiroomPipeline(object):
                 items = ZiroomRoomItemLog.compare_old(session, self.begin_time)
                 # 日常统计信息
                 self.msgs.append("<font color=\"#C8C8C8\">%s 共更新 %s 条记录</font>" % (datetime.datetime.today().strftime("%Y-%m-%d"), len(items)))
+                title = "%s 更新"%len(items)
                 session.flush()
                 session.commit()
             except Exception as e:
                 logger.exception("compare old error: %s", str(e))
                 self.msgs.append("<font color=\"#FF0000\">比对过程发生异常</font>， %s" % str(e))
+                title = "比对异常"
                 session.rollback()
 
             if not items:
@@ -75,14 +78,15 @@ class ZiroomPipeline(object):
                 logger.exception("predict next adjust error: %s", str(e))
                 self.msgs.append("<font color=\"#FF0000\">预测过程发生异常</font>， %s" % str(e))
                 session.rollback()
+                title = "预测异常"
         finally:
-            self.send_ding_notify()
+            self.send_ding_notify(title)
 
-    def send_ding_notify(self):
+    def send_ding_notify(self, title):
         """发送信息"""
         try:
             if self.ding and self.msgs:
-                self.ding.send_notify(self.msgs[-1], "  \n".join(self.msgs))
+                self.ding.send_notify(title, "  \n".join(self.msgs))
         except Exception as e:
             logger.exception("sending error: %s", str(e))
 
