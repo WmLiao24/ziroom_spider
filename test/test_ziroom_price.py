@@ -105,3 +105,15 @@ class ZiroomSpiderTest(unittest.TestCase):
         # 钉钉群消息
         ding = DingDingNotifyUtil(_parser.get("ding_notify", "access_token"), _parser.get("ding_notify", "secret"))
         ding.send_notify("**测试** [百度](https://www.baidu.com)  \n<font color=\"#FF0000\">警告</font> 错误发生了")
+
+    def test_signal(self):
+        import blinker
+        s1 = blinker.Signal()
+        s1.connect(self.handle_signal1)
+        # s1.send(self, "abc")
+        s1.send(self, param1="abc")
+        s1.send(self, param1="abc", param2="ddd")
+
+    def handle_signal1(self, sender, **params):
+        print(sender, params.get("param1"))
+

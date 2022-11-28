@@ -94,22 +94,22 @@ class ZiroomPipeline(object):
         after_adjust_price.connect(self.handle_adjust_price)
         predict_adjust_nearly.connect(self.handle_predict_adjust_nearly)
 
-    def handle_online(self, item):
+    def handle_online(self, item, **_):
         """发送上线通知"""
         self.msgs.append("**上线了！** %s [web](%s)，[h5](%s)，%s %s"%(
             item.item_title, item.item_url, item.get_h5_url(), item.item_desc, item.price))
 
-    def handle_release(self, item):
+    def handle_release(self, item, **_):
         """发送释放通知"""
         self.msgs.append("**释放了！** %s [web](%s)，[h5](%s)，%s %s"%(
             item.item_title, item.item_url, item.get_h5_url(), item.item_desc, item.price))
 
-    def handle_adjust_price(self, adjust, item_log):
+    def handle_adjust_price(self, adjust, item_log, **_):
         """处理调价通知"""
         self.msgs.append("**调价了！** %s [web](%s)，[h5](%s)，从 %s 调到了 %s"%(
             item_log.item_title, item_log.item_url, item_log.get_h5_url(), adjust.old_price, adjust.new_price))
 
-    def handle_predict_adjust_nearly(self, item):
+    def handle_predict_adjust_nearly(self, item, **_):
         """处理预期调价临近通知"""
         self.msgs.append("**关注一下！** [%s](%s) 现在价格 %s，预期 %s 会调价到 %s"%(
             item.item_title, item.item_url, item.price, item.predict_adjust_price_date, item.predict_adjust_price))
