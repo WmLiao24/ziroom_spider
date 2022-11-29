@@ -9,6 +9,9 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+
+from ziroom import other_config
+
 BOT_NAME = 'ziroom'
 
 SPIDER_MODULES = ['ziroom.spiders']
@@ -44,6 +47,10 @@ DEFAULT_REQUEST_HEADERS = {
     'Accept-Language': 'zh-CN,zh;q=0.9',
     'Accept-Encoding': 'gzip'
 }
+# 填充cookie
+if other_config.getboolean("request", "use_cookie", fallback=False):
+    DEFAULT_REQUEST_HEADERS["Cookie"] = other_config.get("request", "cookie")
+
 
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
@@ -91,7 +98,6 @@ ITEM_PIPELINES = {
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 # 钉钉群消息
-from ziroom import other_config
 OPEN_DING_NOTIFY = other_config.getboolean("ding_notify", "open", fallback=False)
 DING_ACCESS_TOKEN = other_config.get("ding_notify", "access_token", fallback=None)
 DING_SECRET = other_config.get("ding_notify", "secret", fallback=None)

@@ -6,3 +6,9 @@ open = False
 access_token =
 ; 钉钉群聊机器人加签
 secret =
+
+[request]
+; 使用cookie请求
+use_cookie = False
+# cookie值
+cookie =
