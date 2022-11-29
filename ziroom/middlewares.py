@@ -4,14 +4,23 @@
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+from urllib.parse import urljoin
 
+import scrapy
 from scrapy import signals
+from sqlalchemy import select
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ZiroomSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the spider middleware does not modify the
     # passed objects.
+
+    def __init__(self):
+        self.exists_item_ids = None
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -32,8 +41,15 @@ class ZiroomSpiderMiddleware(object):
         # it has processed the response.
 
         # Must return an iterable of Request, dict or Item objects.
+        from ziroom.items import ZiroomItem
         for i in result:
-            yield i
+            # 判断是否需要继续访问明细，历史中没有？需要补全明细？
+            if isinstance(i, ZiroomItem) and i["item_id"] not in self.exists_item_ids and i["crawl_step"]==1:
+                logger.debug("ignore detail: %s", i["item_id"])
+                yield scrapy.Request(url=urljoin("https://", i["item_url"]), callback=spider.parse_detail,
+                             cb_kwargs={"item": i})
+            else:
+                yield i
 
     def process_spider_exception(self, response, exception, spider):
         # Called when a spider or process_spider_input() method
@@ -54,6 +70,10 @@ class ZiroomSpiderMiddleware(object):
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+        from ziroom import session
+        from ziroom.models import ZiroomRoomItem
+        self.exists_item_ids = set(session.execute(select(ZiroomRoomItem.item_id)).scalars().all())
+
 
 
 class ZiroomDownloaderMiddleware(object):

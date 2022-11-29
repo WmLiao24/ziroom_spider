@@ -4,25 +4,18 @@
 #
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-from select import select
 
 import datetime
-from sqlalchemy.orm import Session
+import logging
 
+from ziroom import session
 from ziroom.dingding import DingDingNotifyUtil
 from ziroom.items import ZiroomItem
-from ziroom.models import ZiroomRoomItem, ZiroomRoomItemLog, ZiroomAdjustPriceLog, Base, current_time, \
+from ziroom.models import ZiroomRoomItemLog, ZiroomAdjustPriceLog, current_time, \
     after_release, after_adjust_price, predict_adjust_nearly, after_online
-from sqlalchemy import create_engine
-
-from ziroom.spiders.price_util import data_path
-import logging
 
 logger = logging.getLogger(__name__)
 
-engine = create_engine("sqlite+pysqlite:///"+data_path("all.db"), echo=True, future=True)
-Base.metadata.create_all(engine)
-session = Session(engine)
 
 class ZiroomPipeline(object):
 

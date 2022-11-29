@@ -47,9 +47,9 @@ DEFAULT_REQUEST_HEADERS = {
 
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-# SPIDER_MIDDLEWARES = {
-#    'ziroom.middlewares.ZiroomSpiderMiddleware': 543,
-# }
+SPIDER_MIDDLEWARES = {
+   'ziroom.middlewares.ZiroomSpiderMiddleware': 543,
+}
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
@@ -91,24 +91,7 @@ ITEM_PIPELINES = {
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 # 钉钉群消息
-OPEN_DING_NOTIFY = False
-DING_ACCESS_TOKEN = None
-DING_SECRET = None
-
-import os
-from configparser import ConfigParser
-
-_other_config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../data/other.cfg")
-_parser = ConfigParser()
-if os.path.exists(_other_config_path):
-    print("loading other config.")
-    with open(_other_config_path, "r", encoding="utf8") as f:
-        _parser.read_file(f)
-    # 钉钉群消息
-    OPEN_DING_NOTIFY = _parser.getboolean("ding_notify", "open")
-    DING_ACCESS_TOKEN = _parser.get("ding_notify", "access_token")
-    DING_SECRET = _parser.get("ding_notify", "secret")
-
-import logging.config
-_log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../logs/")
-logging.config.fileConfig("logger.cfg", defaults={"LOG_DIR": _log_dir})
+from ziroom import other_config
+OPEN_DING_NOTIFY = other_config.getboolean("ding_notify", "open", fallback=False)
+DING_ACCESS_TOKEN = other_config.get("ding_notify", "access_token", fallback=None)
+DING_SECRET = other_config.get("ding_notify", "secret", fallback=None)

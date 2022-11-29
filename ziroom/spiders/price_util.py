@@ -3,21 +3,17 @@ import json
 import logging
 import math
 import os
-import sys
 
 import cv2
 import ddddocr
 import pytesseract
 from PIL import Image
 
+from ziroom import data_path
+
 ocr = ddddocr.DdddOcr()
 logger = logging.getLogger(__name__)
-DATA = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "data")
-isDebug = True if sys.gettrace() else False
 
-
-def data_path(path):
-    return os.path.join(DATA, path)
 
 def get_pure_img(background_image_path: str):
     """二值化图片"""

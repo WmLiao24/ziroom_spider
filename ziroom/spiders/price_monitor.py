@@ -1,19 +1,17 @@
 # -*- coding: utf-8 -*-
+import datetime
 import logging
 import os
-import sys
 from urllib.parse import urljoin
 
-import datetime
 import requests
 import scrapy
 
-from ziroom.spiders.price_util import get_price_num_from_pos, data_path
+from ziroom import data_path
+from ziroom.spiders.price_util import get_price_num_from_pos
 
 logger = logging.getLogger(__name__)
 
-DATA = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
-isDebug = True if sys.gettrace() else False
 
 from ziroom.items import ZiroomItem
 
@@ -21,11 +19,17 @@ class PriceMonitorSpider(scrapy.Spider):
     name = 'price_monitor'
     allowed_domains = ['ziroom.com']
     start_urls = [
-        "https://www.ziroom.com/z/?p=x3&qwd=%E9%80%9A%E6%83%A0%E5%AE%B6%E5%9B%AD&isOpen=1",
-        "https://www.ziroom.com/z/?p=x4&qwd=%E9%80%9A%E6%83%A0%E5%AE%B6%E5%9B%AD&isOpen=1"
+        # "https://www.ziroom.com/z/?p=x3&qwd=%E9%80%9A%E6%83%A0%E5%AE%B6%E5%9B%AD&isOpen=1",
+        # "https://www.ziroom.com/z/?p=x4&qwd=%E9%80%9A%E6%83%A0%E5%AE%B6%E5%9B%AD&isOpen=1"
+        "https://www.ziroom.com/z/z1/?p=a3-x4&qwd=%E5%A4%A7%E6%9C%9B%E8%B7%AF&isOpen=1",
     ]
 
     def parse(self, response, **kwargs):
+        # 检测是否有下一页
+        next_url = response.css(".Z_pages a.next::attr(href)").extract_first()
+        if next_url:
+            yield scrapy.Request(url=urljoin("https://", next_url), callback=self.parse)
+
         for item in response.css(".Z_list-box .item"):
             item_title = item.css(".title a::text").extract_first()
             logger.info("handle: %s", item_title)
@@ -49,12 +53,11 @@ class PriceMonitorSpider(scrapy.Spider):
 
             # 按日期和房间ID分组唯一，当日可以多次更新
             id = "%s%s"%(datetime.datetime.today().strftime("%Y%m%d"), item_id)
-            yield scrapy.Request(url=urljoin("https://", item_url), callback=self.parse_detail,
-                                 cb_kwargs=dict(id=id, item_url=urljoin("https://", item_url), item_id=item_id,
+            yield ZiroomItem(crawl_step=1, id=id, item_url=urljoin("https://", item_url), item_id=item_id,
                              item_title=item_title, item_desc=item_desc,
                              tip=tip, sign_status=sign_status,
                              price=self.parse_price(price_num_e,background_size=20),
-                             underline_price=self.parse_price(underline_price_num_e, background_size=15)))
+                             underline_price=self.parse_price(underline_price_num_e, background_size=15))
 
     def parse_detail(self, response, **data):
         """处理详情页"""
@@ -68,9 +71,11 @@ class PriceMonitorSpider(scrapy.Spider):
         house_type = home_info_ele.css("dl:contains(户型) dd::text").extract_first()
         floor = response.css(".Z_home_info .Z_home_o li:contains(楼层) .va::text").extract_first()
         sign_date_limit = response.css(".jiance .info_label:contains(签约时长)+.info_value::text").extract_first()
-        yield ZiroomItem(**data, house_id=house_id, room_id=room_id, inv_no=inv_no,
+        item:ZiroomItem = data["item"]
+        item.update(crawl_step=2, house_id=house_id, room_id=room_id, inv_no=inv_no,
                          using_area=using_area, direction=direction, house_type=house_type,
                          sign_date_limit=sign_date_limit, floor=floor)
+        yield item
 
     def parse_price(self, ele, background_size):
         if len(ele) == 0:

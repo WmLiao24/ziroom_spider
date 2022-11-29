@@ -27,5 +27,6 @@ class ZiroomItem(scrapy.Item):
     house_type = scrapy.Field()
     floor = scrapy.Field()
     sign_date_limit = scrapy.Field()
+    crawl_step = scrapy.Field()
 
 

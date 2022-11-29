@@ -105,6 +105,7 @@ class ZiroomRoomItem(Base):
     @classmethod
     def add_item_from_log(cls, session:Session, item_log:ZiroomRoomItemLog):
         """新房间"""
+        # 第一次录入完整信息
         item = ZiroomRoomItem(
             item_id=item_log.item_id, item_url=item_log.item_url,
             item_title=item_log.item_title, item_desc=item_log.item_desc,
@@ -128,27 +129,16 @@ class ZiroomRoomItem(Base):
 
     def merge_item_and_log(self, session, item_log:ZiroomRoomItemLog):
         """合并房间记录"""
-        # 更新基本信息
-        self.item_title = item_log.item_title
-        self.item_desc = item_log.item_desc
+        # 更新可能变化的促销信息
         self.tip = item_log.tip
-        self.underline_price = item_log.underline_price
-        self.direction = item_log.direction
-        self.using_area = item_log.using_area
-        self.house_type = item_log.house_type
-        self.floor = item_log.floor
-        self.sign_date_limit = item_log.sign_date_limit
-        self.house_id = item_log.house_id
-        self.room_id = item_log.room_id
-        self.inv_no = item_log.inv_no
         self.update_at = current_time()
 
         if self.price != item_log.price:
+            # 经过对比确定是产生了条件行为，记录日志
+            adjust = ZiroomAdjustPriceLog.add_adjust_from_log(session, item_log, item=self, adjust_price_date=today)
             # 生成调价记录
             self.price = item_log.price
             self.latest_adjust_price_date = today
-            # 经过对比确定是产生了条件行为，记录日志
-            adjust = ZiroomAdjustPriceLog.add_adjust_from_log(session, item_log, item=self, adjust_price_date=today)
             # 发送广播，通知已经调价
             after_adjust_price.send(adjust, item_log=item_log)
         if item_log.sign_status != self.sign_status and item_log.sign_status == "签约":
