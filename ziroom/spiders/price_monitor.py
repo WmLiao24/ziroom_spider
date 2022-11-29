@@ -19,8 +19,8 @@ class PriceMonitorSpider(scrapy.Spider):
     name = 'price_monitor'
     allowed_domains = ['ziroom.com']
     start_urls = [
-        # "https://www.ziroom.com/z/?p=x3&qwd=%E9%80%9A%E6%83%A0%E5%AE%B6%E5%9B%AD&isOpen=1",
-        # "https://www.ziroom.com/z/?p=x4&qwd=%E9%80%9A%E6%83%A0%E5%AE%B6%E5%9B%AD&isOpen=1"
+        "https://www.ziroom.com/z/?p=x3&qwd=%E9%80%9A%E6%83%A0%E5%AE%B6%E5%9B%AD&isOpen=1",
+        "https://www.ziroom.com/z/?p=x4&qwd=%E9%80%9A%E6%83%A0%E5%AE%B6%E5%9B%AD&isOpen=1"
         "https://www.ziroom.com/z/z1/?p=a3-x4&qwd=%E5%A4%A7%E6%9C%9B%E8%B7%AF&isOpen=1",
     ]
 
