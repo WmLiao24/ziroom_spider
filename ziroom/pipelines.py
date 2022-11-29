@@ -31,9 +31,14 @@ class ZiroomPipeline(object):
             self.register_ding_notify(spider)
 
     def process_item(self, item, spider):
-        if isinstance(item, ZiroomItem):
-            session.merge(ZiroomRoomItemLog(**item, update_at=current_time()))
-            session.commit()
+        try:
+            item.pop("crawl_step")
+            if isinstance(item, ZiroomItem):
+                session.merge(ZiroomRoomItemLog(**item, update_at=current_time()))
+                session.commit()
+        except Exception as e:
+            logger.exception("process error: %s", str(e))
+            session.rollback()
         return item
 
     def close_spider(self, spider):
