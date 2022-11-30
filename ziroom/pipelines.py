@@ -35,10 +35,9 @@ class ZiroomPipeline(object):
             item.pop("crawl_step")
             if isinstance(item, ZiroomItem):
                 session.merge(ZiroomRoomItemLog(**item, update_at=current_time()))
-                session.commit()
         except Exception as e:
             logger.exception("process error: %s", str(e))
-            session.rollback()
+            raise e
         return item
 
     def close_spider(self, spider):
