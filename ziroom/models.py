@@ -216,7 +216,8 @@ class ZiroomAdjustPriceLog(Base):
         if adjust_price_date:
             # 调取上一次调价记录，计算本次调价的差距天数
             prev_adjust = session.query(ZiroomAdjustPriceLog) \
-                .filter(ZiroomAdjustPriceLog.item_id == item_log.item_id, ZiroomRoomItem.adjust_price_date.is_not(None)) \
+                .filter(ZiroomAdjustPriceLog.item_id == item_log.item_id,
+                        ZiroomAdjustPriceLog.adjust_price_date.is_not(None)) \
                 .order_by(ZiroomAdjustPriceLog.create_at.desc()) \
                 .first()
 
