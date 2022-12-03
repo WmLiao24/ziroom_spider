@@ -22,7 +22,7 @@ if os.path.exists(data_path("other.cfg")):
     with open(data_path("other.cfg"), "r", encoding="utf8") as f:
         other_config.read_file(f)
 
-logging.config.fileConfig("logger.cfg", defaults={"LOG_DIR": data_path("../logs")})
+logging.config.fileConfig(data_path("../logger.cfg"), defaults={"LOG_DIR": data_path("../logs")})
 engine = create_engine("sqlite+pysqlite:///" + data_path("all.db"), echo=True, future=True)
 Base.metadata.create_all(engine)
 session = Session(engine)

@@ -4,13 +4,13 @@ import time
 
 import blinker
 from sklearn.linear_model import LinearRegression
-from sqlalchemy import Column, String, Integer, Date
+from sqlalchemy import Column, String, Integer, Date, or_
 from sqlalchemy.orm import declarative_base, Session
 
 logger = logging.getLogger(__name__)
 Base = declarative_base()
 
-today = datetime.datetime.today()
+today = datetime.datetime.today().date()
 
 after_online = blinker.Signal(doc="新上线, 参数: item")
 after_release = blinker.Signal(doc="新释放, 参数: item")
@@ -184,8 +184,8 @@ class ZiroomRoomItem(Base):
     def predict_next_adjust_price(self, model):
         """预测房价调整"""
         # 参数为定价和当前的价格
-        params = [[self.underline_price or self.price, self.price]]
-        next_price = model.predict(params)[0]
+        params = [[self.underline_price or self.price, int((current_time() - self.create_at)/86400000)]]
+        next_price = int(model.predict(params)[0])
         logger.debug("params: %s next_price: %s", params, next_price)
         return next_price
 
@@ -268,7 +268,8 @@ class ZiroomAdjustPriceLog(Base):
     def refresh_predict_adjust_price_model(cls, session):
         """生成调价模型"""
         results = session.query(ZiroomAdjustPriceLog) \
-            .filter(ZiroomAdjustPriceLog.old_price != ZiroomAdjustPriceLog.new_price) \
+            .filter(or_(ZiroomAdjustPriceLog.old_price != ZiroomAdjustPriceLog.new_price,
+                        ZiroomAdjustPriceLog.underline_price.is_not(None))) \
             .all()
         if len(results) == 0:
             logger.warning("miss enough data!")
@@ -277,7 +278,7 @@ class ZiroomAdjustPriceLog(Base):
         x_train = []
         y_train = []
         for result in results:
-            x_train.append([result.underline_price, result.old_price])
+            x_train.append([result.underline_price or result.old_price, int((current_time() - result.create_at)/86400000)])
             y_train.append(result.new_price)
 
         logger.debug("train price model items: %s", len(x_train))
