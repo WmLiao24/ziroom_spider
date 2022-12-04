@@ -255,7 +255,7 @@ class ZiroomAdjustPriceLog(Base):
         x_train = []
         y_train = []
         for result in results:
-            x_train.append([result.underline_price, result.old_price])
+            x_train.append([result.underline_price or result.old_price, result.new_price])
             y_train.append(result.between_days)
 
         logger.debug("train between days model items: %s", len(x_train))
