@@ -10,7 +10,7 @@
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
 
-from ziroom import other_config
+from ziroom import env
 
 BOT_NAME = 'ziroom'
 
@@ -48,8 +48,8 @@ DEFAULT_REQUEST_HEADERS = {
     'Accept-Encoding': 'gzip'
 }
 # 填充cookie
-if other_config.getboolean("request", "use_cookie", fallback=False):
-    DEFAULT_REQUEST_HEADERS["Cookie"] = other_config.get("request", "cookie")
+if env.bool("REQUEST_USE_COOKIE", default=False):
+    DEFAULT_REQUEST_HEADERS["Cookie"] = env.str("REQUEST_COOKIE")
 
 
 # Enable or disable spider middlewares
@@ -98,6 +98,6 @@ ITEM_PIPELINES = {
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 # 钉钉群消息
-OPEN_DING_NOTIFY = other_config.getboolean("ding_notify", "open", fallback=False)
-DING_ACCESS_TOKEN = other_config.get("ding_notify", "access_token", fallback=None)
-DING_SECRET = other_config.get("ding_notify", "secret", fallback=None)
+OPEN_DING_NOTIFY = env.bool("DING_NOTIFY_OPEN", default=False)
+DING_ACCESS_TOKEN = env.str("DING_NOTIFY_ACCESS_TOKEN")
+DING_SECRET = env.str("DING_NOTIFY_SECRET")

@@ -99,14 +99,10 @@ class ZiroomSpiderTest(unittest.TestCase):
 
     def test_send_ding_notify(self):
         from configparser import ConfigParser
-
-        _other_config_path = data_path("other.cfg")
-        _parser = ConfigParser()
-        with open(_other_config_path, "r", encoding="utf8") as f:
-            _parser.read_file(f)
+        from ziroom import env
         # 钉钉群消息
-        ding = DingDingNotifyUtil(_parser.get("ding_notify", "access_token"), _parser.get("ding_notify", "secret"))
-        ding.send_notify("**测试** [百度](https://www.baidu.com)  \n<font color=\"#FF0000\">警告</font> 错误发生了")
+        ding = DingDingNotifyUtil(env.str("DING_NOTIFY_ACCESS_TOKEN"), env.str("DING_NOTIFY_SECRET"))
+        ding.send_notify("测试", "**测试** [百度](https://www.baidu.com)  \n<font color=\"#FF0000\">警告</font> 错误发生了")
 
     def test_signal(self):
         import blinker

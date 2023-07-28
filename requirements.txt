@@ -1,8 +1,7 @@
 # conda install python=3.8
-# conda install opencv
 # conda install scikit-learn
+# conda install tesseract
 Scrapy==2.7.1
-pytesseract==0.3.10
-ddddocr==1.4.7
 sqlalchemy==1.4.44
 blinker==1.5
+environs
