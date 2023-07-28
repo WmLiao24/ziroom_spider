@@ -5,15 +5,19 @@ import math
 import os
 
 import cv2
-import ddddocr
 import pytesseract
 from PIL import Image
 
 from ziroom import data_path, isDebug
 
-ocr = ddddocr.DdddOcr()
 logger = logging.getLogger(__name__)
 
+ocr = None
+try:
+    import ddddocr
+    ocr = ddddocr.DdddOcr()
+except:
+    pass
 
 def get_pure_img(background_image_path: str):
     """二值化图片"""
@@ -44,13 +48,17 @@ def get_price_image_info(background_image_path:str):
     # 读取原始图像
     background_img = Image.fromarray(pure_image)
     size = background_img.size
-    code1 = ocr.classification(background_img).strip()
+    code1 = None
+    if ocr:
+        code1 = ocr.classification(background_img).strip()
     config = r"--oem 3 --psm 6 outputbase digits"
     code2 = pytesseract.image_to_string(background_img, config=config).strip()
     code = None
     if code1 and code1 == code2:
         # 100%正确
         code = code1
+    elif code1 is None and code2:
+        code = code2
     elif isDebug:
         # 有问题，在debug模式里人工干预
         print("please verify: %s, rst: %s != %s"%(fname, code1, code2))
