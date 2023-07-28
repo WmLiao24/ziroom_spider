@@ -7,7 +7,7 @@ from urllib.parse import urljoin
 import requests
 import scrapy
 
-from ziroom import data_path
+from ziroom import data_path, env
 from ziroom.spiders.price_util import get_price_num_from_pos
 
 logger = logging.getLogger(__name__)
@@ -18,11 +18,7 @@ from ziroom.items import ZiroomItem
 class PriceMonitorSpider(scrapy.Spider):
     name = 'price_monitor'
     allowed_domains = ['ziroom.com']
-    start_urls = [
-        # "https://www.ziroom.com/z/?p=x3&qwd=%E9%80%9A%E6%83%A0%E5%AE%B6%E5%9B%AD&isOpen=1",
-        # "https://www.ziroom.com/z/?p=x4&qwd=%E9%80%9A%E6%83%A0%E5%AE%B6%E5%9B%AD&isOpen=1"
-        "https://www.ziroom.com/z/z1/?p=a3-x4&qwd=%E5%A4%A7%E6%9C%9B%E8%B7%AF&isOpen=1",
-    ]
+    start_urls = list(env.json("PRICE_MONITOR_URLS").values())
 
     def parse(self, response, **kwargs):
         # 检测是否有下一页

@@ -150,3 +150,7 @@ class ZiroomSpiderTest(unittest.TestCase):
                 if (i+1) % 100 == 0:
                     session.commit()
             session.commit()
+
+    def test_env(self):
+        from ziroom import env
+        print(env.json("PRICE_MONITOR_URLS"))

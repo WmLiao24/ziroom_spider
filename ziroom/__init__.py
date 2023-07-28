@@ -1,7 +1,7 @@
 import logging.config
 import os
 import sys
-from configparser import ConfigParser
+from environs import Env
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
@@ -16,11 +16,9 @@ def data_path(path):
     return os.path.join(DATA, path)
 
 
-other_config = ConfigParser()
-if os.path.exists(data_path("other.cfg")):
-    print("loading other config.")
-    with open(data_path("other.cfg"), "r", encoding="utf8") as f:
-        other_config.read_file(f)
+env = Env()
+print("loading environ settings")
+env.read_env(path=data_path(".env"))
 
 logging.config.fileConfig(data_path("../logger.cfg"), defaults={"LOG_DIR": data_path("../logs")})
 engine = create_engine("sqlite+pysqlite:///" + data_path("all.db"), echo=True, future=True)
@@ -29,5 +27,5 @@ session = Session(engine)
 
 
 __all__ = [
-    "engine", "session", "other_config", "data_path", "isDebug"
+    "engine", "session", "env", "data_path", "isDebug"
 ]

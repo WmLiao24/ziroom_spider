@@ -9,7 +9,7 @@ import ddddocr
 import pytesseract
 from PIL import Image
 
-from ziroom import data_path
+from ziroom import data_path, isDebug
 
 ocr = ddddocr.DdddOcr()
 logger = logging.getLogger(__name__)
