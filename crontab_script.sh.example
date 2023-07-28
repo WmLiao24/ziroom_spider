@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# 环境变量
+PATH=:${PATH}
+# 工作目录
+DIR=
+
+cd ${DIR}
+scrapy crawl price_monitor > /dev/null
+
+# 0 9,12,20 * * * sh /path/to/crontab_script.sh
