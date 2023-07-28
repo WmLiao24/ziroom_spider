@@ -4,20 +4,12 @@ import logging
 import math
 import os
 
-import cv2
 import pytesseract
 from PIL import Image
 
-from ziroom import data_path, isDebug
+from ziroom import data_path
 
 logger = logging.getLogger(__name__)
-
-ocr = None
-try:
-    import ddddocr
-    ocr = ddddocr.DdddOcr()
-except:
-    pass
 
 def get_pure_img(background_image_path: str):
     """二值化图片"""
@@ -25,14 +17,18 @@ def get_pure_img(background_image_path: str):
     fname1, ext = os.path.splitext(fname)
     pure_image_path = data_path(fname1+"_pure"+ext)
     if os.path.exists(pure_image_path):
-        return cv2.imread(background_image_path, cv2.IMREAD_UNCHANGED)
+        return Image.open(pure_image_path)
 
     # 自如的价格放到了alpha通道里，需要全部读取
-    img = cv2.imread(background_image_path, cv2.IMREAD_UNCHANGED)
-    _, _, _, a = cv2.split(img)
+    img = Image.open(background_image_path, 'r')
+    assert img.mode == 'RGBA', "miss alpha channel"
+
+    _, _, _, a = img.split()
+    threshold = 150
     # 二值化
-    _, img = cv2.threshold(a, 150, 255, cv2.THRESH_BINARY)
-    cv2.imwrite(pure_image_path, img)
+    filter_func = lambda x: 0 if x < threshold else 1
+    img = a.point(filter_func, '1')
+    img.save(pure_image_path)
     return img
 
 def get_price_image_info(background_image_path:str):
@@ -44,38 +40,14 @@ def get_price_image_info(background_image_path:str):
         with open(info_path, "r") as f:
             return json.load(f)
     # 二值化图像
-    pure_image = get_pure_img(background_image_path)
+    background_img = get_pure_img(background_image_path)
     # 读取原始图像
-    background_img = Image.fromarray(pure_image)
     size = background_img.size
-    code1 = None
-    if ocr:
-        code1 = ocr.classification(background_img).strip()
     config = r"--oem 3 --psm 6 outputbase digits"
-    code2 = pytesseract.image_to_string(background_img, config=config).strip()
-    code = None
-    if code1 and code1 == code2:
-        # 100%正确
-        code = code1
-    elif code1 is None and code2:
-        code = code2
-    elif isDebug:
-        # 有问题，在debug模式里人工干预
-        print("please verify: %s, rst: %s != %s"%(fname, code1, code2))
-        while not code:
-            index = input("type in 1:code1 / 2:code2 / 3:manual: ").strip()
-            if index == "1":
-                code = code1
-                break
-            elif index == "2":
-                code = code2
-                break
-            elif index == "3":
-                code = input("correct code: ").strip()
-                break
+    code = pytesseract.image_to_string(background_img, config=config).strip()
 
     if not code:
-        raise Exception("detect error, rst: %s != %s", code1, code2)
+        raise Exception("detect error, rst: %s != %s", code)
     data = {
         "code": code,
         "weight": size[0],
