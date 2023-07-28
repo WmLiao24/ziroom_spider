@@ -3,8 +3,10 @@ import unittest
 from sklearn.linear_model import LinearRegression
 
 from ziroom.dingding import DingDingNotifyUtil
-from ziroom.models import ZiroomRoomItemLog, ZiroomAdjustPriceLog, ZiroomRoomItem
+from ziroom.models import ZiroomRoomItemLog, ZiroomAdjustPriceLog, ZiroomRoomItem, ZiroomPredictPriceLog
 from ziroom.spiders.price_util import *
+from datetime import datetime
+import time
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -117,3 +119,34 @@ class ZiroomSpiderTest(unittest.TestCase):
     def handle_signal1(self, sender, **params):
         print(sender, params.get("param1"))
 
+    def test_handle_predict_log(self):
+        """补齐预测日志"""
+        import re
+        log_pattern = re.compile("^.*\('([^']+)', (\d+), (\d+), (\d+)\)$")
+        from ziroom.pipelines import session
+        with open("../logs/update_predict_log_2023-7-20.log/update_predict_log_2023-7-20.log") as f:
+            for i, row in enumerate(f):
+                m = log_pattern.match(row.strip())
+                if m:
+                    predict_adjust_price_date = datetime.strptime(m.group(1), "%Y-%m-%d")
+                    predict_adjust_price = int(m.group(2))
+                    create_at = int(m.group(3))
+                    item_id = int(m.group(4))
+                    price = None
+
+                    # 从调价记录中找到上一条记录
+                    prev_adjust = session.query(ZiroomAdjustPriceLog.new_price, ZiroomAdjustPriceLog.old_price)\
+                        .filter(ZiroomAdjustPriceLog.item_id==item_id, ZiroomAdjustPriceLog.create_at <= create_at) \
+                        .order_by(ZiroomAdjustPriceLog.create_at.desc()) \
+                        .first()
+                    if prev_adjust is not None:
+                        price = prev_adjust.new_price or prev_adjust.old_price
+
+                    log = ZiroomPredictPriceLog(
+                        item_id=item_id, price=price, predict_adjust_price_date=predict_adjust_price_date,
+                        predict_adjust_price=predict_adjust_price, create_at=create_at
+                    )
+                    session.add(log)
+                if (i+1) % 100 == 0:
+                    session.commit()
+            session.commit()

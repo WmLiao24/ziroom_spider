@@ -172,6 +172,12 @@ class ZiroomRoomItem(Base):
                 self.predict_adjust_price_date = today + datetime.timedelta(days=next_days)
         self.update_at = current_time()
         session.merge(self)
+        # 增加日志记录预测日志
+        predict_log = ZiroomPredictPriceLog(
+            item_id=self.item_id, price=self.price, predict_adjust_price_date=self.predict_adjust_price_date,
+            predict_adjust_price=self.predict_adjust_price, create_at=self.update_at
+        )
+        session.add(predict_log)
 
     def predict_next_adjust_between_days(self, model):
         """预测房间调价间隔"""
@@ -289,3 +295,17 @@ class ZiroomAdjustPriceLog(Base):
 
     def __repr__(self):
         return '<ZiroomAdjustPriceLog %r>' % self.item_id
+
+
+class ZiroomPredictPriceLog(Base):
+    """自如房价预测记录"""
+    __tablename__ = "ziroom_predict_price_log"
+    id = Column(Integer, autoincrement=True, primary_key=True, comment="ID")
+    item_id = Column(Integer, nullable=False, comment="房间ID")
+    price = Column(Integer, nullable=True, comment="当前价格")
+    predict_adjust_price_date = Column(Date, nullable=True, comment="预期调价时间")
+    predict_adjust_price = Column(Integer, nullable=True, comment="预期调价")
+    create_at = Column(Integer, default=current_time, comment="创建时间")
+
+    def __repr__(self):
+        return '<ZiroomPredictPriceLog %r>' % self.id
