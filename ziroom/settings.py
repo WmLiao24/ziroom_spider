@@ -61,9 +61,10 @@ SPIDER_MIDDLEWARES = {
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-# DOWNLOADER_MIDDLEWARES = {
-   # 'ziroom.middlewares.ZiroomDownloaderMiddleware': 543,
-# }
+DOWNLOADER_MIDDLEWARES = {
+    'ziroom.gerapy_middlewares.PyppeteerMiddleware': 542,
+    'ziroom.middlewares.ZiroomDownloaderMiddleware': 543,
+}
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
@@ -102,3 +103,10 @@ ITEM_PIPELINES = {
 OPEN_DING_NOTIFY = env.bool("DING_NOTIFY_OPEN", default=False)
 DING_ACCESS_TOKEN = env.str("DING_NOTIFY_ACCESS_TOKEN")
 DING_SECRET = env.str("DING_NOTIFY_SECRET")
+
+HTTPERROR_ALLOWED_CODES = [302]
+GERAPY_PYPPETEER_HEADLESS = False
+GERAPY_PYPPETEER_EXECUTABLE_PATH = env.str("PYPPETEER_EXECUTABLE_PATH")
+GERAPY_PYPPETEER_WINDOW_WIDTH = 1366
+GERAPY_PYPPETEER_WINDOW_HEIGHT = 768
+GERAPY_PYPPETEER_PRETEND = True

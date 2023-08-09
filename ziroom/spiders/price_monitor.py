@@ -6,6 +6,7 @@ from urllib.parse import urljoin
 
 import requests
 import scrapy
+from scrapy.http import Response
 
 from ziroom import data_path, env
 from ziroom.spiders.price_util import get_price_num_from_pos
@@ -95,3 +96,7 @@ class PriceMonitorSpider(scrapy.Spider):
             with open(cache_file, "wb") as f:
                 f.write(resp.content)
         return cache_file
+
+    def parse_geetest_valid(self, response: Response):
+        print("body:", response.body)
+        pass

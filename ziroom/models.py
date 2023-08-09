@@ -309,3 +309,16 @@ class ZiroomPredictPriceLog(Base):
 
     def __repr__(self):
         return '<ZiroomPredictPriceLog %r>' % self.id
+
+
+class GeetestBreakLog(Base):
+    """极测模拟记录"""
+    __tablename__ = "geetest_break_log"
+    id = Column(Integer, autoincrement=True, primary_key=True, comment="ID")
+    slice_url = Column(String, nullable=False, comment="图片地址")
+    tracks = Column(String, nullable=True, comment="路径")
+    result = Column(String, nullable=True, comment="结果")
+    create_at = Column(Integer, default=current_time, comment="创建时间")
+
+    def __repr__(self):
+        return '<GeetestBreakLog %r>' % self.id

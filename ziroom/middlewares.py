@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import logging
 # Define here the models for your spider middleware
 #
 # See documentation in:
@@ -7,11 +8,23 @@
 from urllib.parse import urljoin
 
 import scrapy
+from gerapy_pyppeteer import PyppeteerRequest
 from scrapy import signals
 from sqlalchemy import select
-import logging
+
+from ziroom.geetest_pyppeteer import GeetestBreakPyppeteer
 
 logger = logging.getLogger(__name__)
+valid_pattern = "https://hot.ziroom.com/zrk-rent/valid"
+geetest_break_pyppeteer = GeetestBreakPyppeteer()
+
+page_meta = {
+    'pyppeteer': {
+        'pretend': True,
+        'before_actions': geetest_break_pyppeteer.register_page_listener,
+        'actions': geetest_break_pyppeteer.parse_valid_page
+    }
+}
 
 
 class ZiroomSpiderMiddleware(object):
@@ -67,13 +80,14 @@ class ZiroomSpiderMiddleware(object):
         # Must return only requests (not items).
         for r in start_requests:
             yield r
+        # url = "https://hot.ziroom.com/zrk-rent/valid?identity=Z%2BjHfITqQidYH3OqYrZhVg%3D%3D&return=http%3A%2F%2Fwww.ziroom.com%2Fz%2Fs100011%257C510100100037%257C100004-t100097%2F%3FisOpen%3D0"
+        # yield PyppeteerRequest(url, callback=spider.parse, dont_filter=True, meta=page_meta)
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
         from ziroom import session
         from ziroom.models import ZiroomRoomItem
         self.exists_item_ids = set(session.execute(select(ZiroomRoomItem.item_id)).scalars().all())
-
 
 
 class ZiroomDownloaderMiddleware(object):
@@ -98,11 +112,13 @@ class ZiroomDownloaderMiddleware(object):
         # - or return a Request object
         # - or raise IgnoreRequest: process_exception() methods of
         #   installed downloader middleware will be called
+        request.meta['dont_filter'] = True
         return None
 
     def process_response(self, request, response, spider):
         # Called with the response returned from the downloader.
-        print(response)
+        if response.url.startswith(valid_pattern) and not isinstance(request, PyppeteerRequest):
+            return PyppeteerRequest(response.url, callback=request.callback, dont_filter=True, meta=page_meta)
 
         # Must either;
         # - return a Response object

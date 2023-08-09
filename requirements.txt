@@ -5,3 +5,5 @@ Scrapy==2.7.1
 sqlalchemy==1.4.44
 blinker==1.5
 environs
+pyppeteer
+gerapy-pyppeteer
