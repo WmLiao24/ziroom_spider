@@ -63,6 +63,7 @@ class PyppeteerRequest(Request):
         pyppeteer_meta['wait_until'] = self.wait_until
         pyppeteer_meta['wait_for'] = self.wait_for
         pyppeteer_meta['script'] = self.script
+        pyppeteer_meta['before_actions'] = self.before_actions
         pyppeteer_meta['actions'] = self.actions
         pyppeteer_meta['sleep'] = self.sleep
         pyppeteer_meta['proxy'] = self.proxy

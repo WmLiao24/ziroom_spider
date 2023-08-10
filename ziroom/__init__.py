@@ -28,9 +28,9 @@ Base.metadata.create_all(engine)
 session = Session(engine)
 
 
-selector = selectors.SelectSelector()
-loop = asyncio.SelectorEventLoop(selector)
-asyncio.set_event_loop(loop)
+# selector = selectors.SelectSelector()
+# loop = asyncio.SelectorEventLoop(selector)
+# asyncio.set_event_loop(loop)
 
 
 __all__ = [
