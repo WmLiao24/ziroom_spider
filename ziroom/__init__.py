@@ -1,6 +1,8 @@
 import logging.config
 import os
+import selectors
 import sys
+import asyncio
 from environs import Env
 
 from sqlalchemy import create_engine
@@ -24,6 +26,11 @@ logging.config.fileConfig(data_path("../logger.cfg"), defaults={"LOG_DIR": data_
 engine = create_engine("sqlite+pysqlite:///" + data_path("all.db"), echo=True, future=True)
 Base.metadata.create_all(engine)
 session = Session(engine)
+
+
+selector = selectors.SelectSelector()
+loop = asyncio.SelectorEventLoop(selector)
+asyncio.set_event_loop(loop)
 
 
 __all__ = [
