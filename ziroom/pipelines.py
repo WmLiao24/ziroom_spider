@@ -8,6 +8,8 @@
 import datetime
 import logging
 
+import itertools
+
 from ziroom import session
 from ziroom.dingding import DingDingNotifyUtil
 from ziroom.items import ZiroomItem
@@ -83,7 +85,8 @@ class ZiroomPipeline(object):
         """发送信息"""
         try:
             if self.ding and self.msgs:
-                self.ding.send_notify(title, "  \n".join(self.msgs))
+                for msgs in itertools.tee(self.msgs, len(self.msgs)//10):
+                    self.ding.send_notify(title, "  \n".join(msgs))
             else:
                 logger.info("\n".join(self.msgs))
         except Exception as e:
