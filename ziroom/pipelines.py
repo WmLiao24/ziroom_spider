@@ -85,7 +85,8 @@ class ZiroomPipeline(object):
         """发送信息"""
         try:
             if self.ding and self.msgs:
-                for msgs in itertools.tee(self.msgs, len(self.msgs)//10):
+                for i in range(0, len(self.msgs), 10):
+                    msgs = self.msgs[i:i+10]
                     self.ding.send_notify(title, "  \n".join(msgs))
             else:
                 logger.info("\n".join(self.msgs))
