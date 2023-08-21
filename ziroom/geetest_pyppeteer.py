@@ -122,8 +122,8 @@ class GeetestBreakPyppeteer(object):
             # 增加鼠标显示
             # if self.debug:
                 # await page.addScriptTag({"path": os.path.join(PATH, "mouse-helper.js")})
-            btn_ele = await page.waitForSelector("div.geetest_btn")
-            slice_ele = await page.waitForSelector("div.geetest_slice")
+            btn_ele = await page.waitForSelector("div.geetest_btn", visible=True)
+            slice_ele = await page.waitForSelector("div.geetest_slice", visible=True)
             # 操作鼠标实现
             logger.debug("mouse opt.")
             btn_box = await btn_ele.boundingBox()
@@ -186,6 +186,8 @@ class GeetestBreakPyppeteer(object):
                 "tracks": json.dumps(tracks),
                 "result": page_params["result"]
             }
+        except asyncio.CancelledError:
+            raise
         except Exception as e:
             logger.exception(e)
 
@@ -206,16 +208,23 @@ class GeetestBreakPyppeteer(object):
 
             # 最多尝试几次
             for i in range(env.int("PYPPETEER_TRY_TIMES")):
-                logger.info("try time: %d", i)
-                break_log = await self.try_break_once(page)
+                try:
+                    logger.info("try time: %d", i)
+                    break_task: asyncio.Task = asyncio.create_task(self.try_break_once(page))
 
-                if break_log:
-                    session.add(GeetestBreakLog(**break_log))
-                    session.commit()
-                    if break_log["result"] == "success":
-                        # 保存当前拖动记录
-                        logger.info("success in %d times", i+1)
-                        return
+                    await asyncio.wait({break_task}, timeout=env.int("PYPPETEER_TRY_TIMEOUT", 180))
+                    if break_task.done():
+                        break_log = break_task.result()
+                        session.add(GeetestBreakLog(**break_log))
+                        session.commit()
+                        if break_log["result"] == "success":
+                            # 保存当前拖动记录
+                            logger.info("success in %d times", i+1)
+                            return
+                    else:
+                        break_task.cancel()
+                except asyncio.CancelledError:
+                    logger.error("break timeout, cancel opt")
             else:
                 logger.error("break max times")
         except Exception as e:

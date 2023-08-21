@@ -77,10 +77,10 @@ class ZiroomSpiderMiddleware(object):
         # that it doesn’t have a response associated.
 
         # Must return only requests (not items).
-        for r in start_requests:
-            yield r
-        # url = "https://hot.ziroom.com/zrk-rent/valid?identity=Z%2BjHfITqQidYH3OqYrZhVg%3D%3D&return=http%3A%2F%2Fwww.ziroom.com%2Fz%2Fs100011%257C510100100037%257C100004-t100097%2F%3FisOpen%3D0"
-        # yield PyppeteerRequest(url, callback=spider.parse, **request_args)
+        # for r in start_requests:
+        #     yield r
+        url = "https://hot.ziroom.com/zrk-rent/valid?identity=Z%2BjHfITqQidYH3OqYrZhVg%3D%3D&return=http%3A%2F%2Fwww.ziroom.com%2Fz%2Fs100011%257C510100100037%257C100004-t100097%2F%3FisOpen%3D0"
+        yield PyppeteerRequest(url, callback=spider.parse, **request_args)
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
