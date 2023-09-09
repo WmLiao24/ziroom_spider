@@ -130,8 +130,8 @@ class ZiroomRoomItem(Base):
     def merge_item_and_log(self, session, item_log:ZiroomRoomItemLog):
         """合并房间记录"""
         # 更新可能变化的促销信息
-        self.tip = item_log.tip
-        self.update_at = current_time()
+        if item_log.tip and self.tip != item_log.tip:
+            self.tip = item_log.tip
 
         if self.price != item_log.price:
             # 经过对比确定是产生了条件行为，记录日志
@@ -146,7 +146,10 @@ class ZiroomRoomItem(Base):
             self.release_date = today
             # 发送广播，通知已经释放
             after_release.send(self)
-        session.merge(self)
+
+        if session.is_modified(self):
+            self.update_at = current_time()
+            session.merge(self)
 
     def predict_next_adjust(self, session, between_days_model, price_model):
         """预测房间调价"""
@@ -170,8 +173,9 @@ class ZiroomRoomItem(Base):
             else:
                 # 没有记录？可能是新增
                 self.predict_adjust_price_date = today + datetime.timedelta(days=next_days)
-        self.update_at = current_time()
-        session.merge(self)
+        if session.is_modified(self):
+            self.update_at = current_time()
+            session.merge(self)
         # 增加日志记录预测日志
         predict_log = ZiroomPredictPriceLog(
             item_id=self.item_id, price=self.price, predict_adjust_price_date=self.predict_adjust_price_date,
