@@ -13,36 +13,44 @@
 # 爬虫
 说干就干，先要分析请求和页面结构，确定数据来源。
 自如服务器返回的数据是在HTML里，我用scrapy爬数据就非常合适
+
 ![](/doc/html.png)
 
 
 # 价格图片挑战
 紧接着，遇到了第一个挑战，价格是数字的图片
-![](/doc/price.png)  
+
+![](/doc/price.png)
+
 ![](/doc/price_html.png)
 
 
 经过尝试，自如的价格是采用底色+alpha通道遮盖的方案实现，通过提取alpha通道的数字信息，结合pytesseract，成功提取数据
+
 ![](/doc/price_bg.png)
 
 
 # 验证码挑战
 世上没有平坦的路，解决了价格问题，又遇到了验证码这只拦路虎
+
 ![](/doc/verify.png)
 
 
 
 拦截验证页跳转请求，提取前后背景图。使用cv检测缺口位置坐标，生成随机轨迹。使用pyppeteer模拟鼠标拖动，完成破解
+
 ![](/doc/break_verify.png)
 
 
 # 盯盘
 搭配钉钉的机器人提醒，实现每天盯盘，跟踪价格动态
+
 ![](/doc/notice.png)
 
 
 # 快人一步
 累积一段时间调价数据之后，调价行为可以被预测。使用LR预测调价时间和调价金额，可以快人一步做决定。
+
 ![](/doc/predict.png)
 
 
@@ -52,12 +60,14 @@
 调价可以预测吗？预测结果可不可以更准一点呢？
 当然你可以！
 欢迎Start，Issue和PR
+
 [github repository](https://github.com/WmLiao24/ziroom_spider)
 
 
 # 乐交益友
 兴趣点包括但不限于爬虫、数据挖掘、机器学习、深度学习、NLP。
 寻求益友，请赐下你的名片
+
 [email](mailto://wm.liao@qq.com)
 
 
