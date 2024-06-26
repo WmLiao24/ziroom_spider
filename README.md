@@ -18,7 +18,7 @@
 
 # 价格图片挑战
 紧接着，遇到了第一个挑战，价格是数字的图片
-![](/doc/price.png)
+![](/doc/price.png)  
 ![](/doc/price_html.png)
 
 
